@@ -56,7 +56,8 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/account/reset-password/init")).permitAll()
                     .requestMatchers(mvc.pattern("/api/account/reset-password/finish")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(mvc.pattern("/api/**")).authenticated()
+                    .requestMatchers(mvc.pattern("/api/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/**")).permitAll()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers(mvc.pattern("/management/health")).permitAll()
                     .requestMatchers(mvc.pattern("/management/health/**")).permitAll()
@@ -72,7 +73,11 @@ public class SecurityConfiguration {
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
-            http.authorizeHttpRequests(authz -> authz.requestMatchers(antMatcher("/h2-console/**")).permitAll());
+            http
+                .authorizeHttpRequests(authz -> authz.requestMatchers(antMatcher("/h2-console/**")).permitAll())
+                .headers(headers -> headers.frameOptions().disable())
+                .csrf(csrf -> csrf
+                    .ignoringRequestMatchers("/h2-console/**"));
         }
         return http.build();
     }
